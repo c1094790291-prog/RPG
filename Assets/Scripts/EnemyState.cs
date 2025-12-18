@@ -1,0 +1,516 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+using System;
+using System.IO;
+
+public class EnemyState : MonoBehaviour, IPointerDownHandler
+{
+    [Header("基础属性")]
+    public int id;
+    public int hp;//生命值
+    public int maxhp;//最大生命值
+    public bool life = true;//生存状况
+    public int armor = 0;//护甲
+    public int strength = 0;//力量
+    public int fire = 0;//燃烧层数
+    public int toxin = 0;//毒素层数
+    public int electricity = 0;//雷电层数
+    [Header("意图")]
+    public int attack;//攻击意图
+    public int defense;//防御意图
+    public int build;//强化意图
+    public int negative;//负面意图
+    public int special1;//特殊意图1
+    public int special2;//特殊意图2
+    public int special3;//特殊意图3
+    public int runningIntent = 1;//即将执行的意图
+    [Header("UI")]
+    public Text nameText;
+    public Text hpText;
+    public Text maxhpText;
+    public Slider hpbar;
+    public Text intent;
+    public Text armorText;
+    public GameObject Image;//图片对象
+    public GameObject Target;//攻击目标
+    public Transform State;//状态栏
+    //图标储存处（方便未来删除）
+    private GameObject Strength_State;//力量状态
+    private GameObject Fire_State;//燃烧状态
+    private GameObject Toxin_State;//中毒状态
+    private GameObject Ele_State;//雷电状态
+    [Header("特效")]
+    public Transform EffectPlace; //特效区域
+    public GameObject BoomAnim_Prefab;//燃烧特效
+    public GameObject ToxinAnim_Prefab;//中毒特效
+    public GameObject HurtAnim_Prefab;//受伤数字特效
+    [Header("其它")]
+    public bool choose = false;//是否可被选择
+    public bool Acing = false;//是否正在行动
+    public GameObject StateManager;//状态管理器
+    public EnemyType enemyType;
+
+    void Start()
+    {
+        StartShow();
+        Refresh();
+        RefreshIntent();//初始化完再随机意图
+        hpbar.value = 1;
+        life = true;
+    }
+    void Update()
+    {
+        if (choose)
+        {
+            nameText.color = Color.red;
+        }
+        else
+        {
+            nameText.color = Color.white;
+        }
+    }
+
+    //初始化显示层
+    public void StartShow()
+    {
+        id = enemyType.id;//加载id
+        LoadImage(id);//加载图片
+        nameText.text = enemyType.name;//显示名字
+        maxhp = enemyType.maxhp;//加载最大生命值
+        maxhpText.text = maxhp.ToString();//显示最大生命
+        hp = enemyType.hp;//加载初始生命值
+
+        //加载意图
+        attack = enemyType.attack;
+        defense = enemyType.defense;
+        build = enemyType.build;
+        negative = enemyType.negative;
+        special1 = enemyType.special1;
+        special2 = enemyType.special2;
+        special3 = enemyType.special3;
+    }
+
+    //图片加载函数
+    public void LoadImage(int _id)
+    {
+        string imageEnemy = Application.dataPath + "/Image/Enemy/"+_id.ToString()+".png";
+        ChooseImage(Image, imageEnemy);
+    }
+
+    //替换图片
+    public void ChooseImage(GameObject blockImage, string imagePath)
+    {
+        Image imageComponent = blockImage.GetComponent<Image>();
+        if (imageComponent == null)
+        {
+            Debug.LogError("blockImage上未挂载Image组件！");
+            return;
+        }
+        // 检查文件是否存在
+        if (!File.Exists(imagePath))
+        {
+            Debug.LogError($"图片文件不存在：{imagePath}");
+            return;
+        }
+        byte[] imageBytes = File.ReadAllBytes(imagePath);// 读取图片文件字节数据
+        // 创建纹理并加载图片数据
+        Texture2D texture = new Texture2D(2, 2); // 初始尺寸任意，LoadImage会自动调整
+        if (texture.LoadImage(imageBytes))
+        {
+            // 将纹理转换为精灵
+            Sprite sprite = Sprite.Create(
+                texture,
+                new Rect(0, 0, texture.width, texture.height), // 精灵矩形区域（整个纹理）
+                new Vector2(0.5f, 0.5f) // 精灵中心点（中心位置）
+            );
+
+            // 设置Image组件的精灵
+            imageComponent.sprite = sprite;
+        }
+        else
+        {
+            Debug.LogError($"加载图片数据失败：{imagePath}");
+            Destroy(texture); // 释放无效纹理
+        }
+    }
+
+    //更新显示层
+    public void Refresh()
+    {
+        hpText.text = hp.ToString();//更新当前生命
+        hpbar.value = (float)hp / (float)maxhp;//更新血条
+        armorText.text = armor.ToString();//更新格挡
+    }
+
+    //被鼠标点击时将触发这个函数
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        //当这个敌人可选，且鼠标左键时（否则右键取消时会误选择）
+        if (choose && Input.GetMouseButton(0))
+        {
+            //Debug.Log("成功选中敌人");
+            //告知战斗管理器自己被选中
+            BattleManager.Instance.AttackConfirm(gameObject);
+        }
+    }
+
+    //更新意图
+    public void RefreshIntent()
+    {
+        runningIntent = RandomIntent();//随机抽取一个意图作为现有意图
+        string _intent;
+        switch (runningIntent)
+        {
+            case 0://攻击意图
+                int hurt = attack + strength;
+                if (hurt < 0) { hurt = 0; }
+                _intent = "攻击：" + (hurt);
+                break;
+            case 1://格挡意图
+                _intent = "防御：" + defense;
+                break;
+            case 2://强化意图
+                _intent = "强化";
+                break;
+            case 3://负面意图
+                _intent = "负面";
+                break;
+            case 4://特殊意图1
+                _intent = EnemyText(id, 4);
+                break;
+            case 5://特殊意图2
+                _intent = EnemyText(id, 5);
+                break;
+            case 6://特殊意图3
+                _intent = EnemyText(id, 6);
+                break;
+            default:
+                _intent = "未知意图";
+                break;
+        }
+        intent.text = _intent;//显示层更改意图
+    }
+
+    //随机意图
+    public int RandomIntent()
+    {
+        int[] intents = new int[7] { attack, defense, build, negative, special1, special2, special3 };
+        int _intent = UnityEngine.Random.Range(0, intents.Length);//这是开集，不会选中末尾
+        if (intents[_intent] <= 0)//判断此敌人是否有这种意图
+        {
+            return RandomIntent();//无效意图则递归
+        }
+        else
+        {
+            return _intent;
+        }
+    }
+
+    //伤害函数
+    public void TakeDamage(int damage)
+    {
+        //雷电附加
+        if (electricity>0)
+        {
+            damage += electricity;
+            GetElectricity(-1);
+            if (electricity > 5) { GetElectricity(-1); }//大于5层额外扣减
+        }
+        //播放受伤特效
+        GameObject hurt_count = Instantiate(HurtAnim_Prefab, EffectPlace);
+        hurt_count.GetComponent<Text>().text = damage.ToString();
+        //伤害结算
+        armor -= damage;//掉甲
+        if (armor < 0)
+        {
+            hp += armor;//扣血
+            armor = 0;
+        }
+        if (hp < 0) hp = 0;
+        Refresh();//更新显示层
+        //死亡
+        if (hp <= 0)
+        {
+            gameObject.SetActive(false);
+            life = false;
+            Acing = false;//通知协程函数行动结束
+            //通知战斗管理器验证一次是否胜利
+            BattleManager.Instance.CheckWin();
+        }
+    }
+
+    //起甲函数
+    public void GetArmor(int _armor)
+    {
+        armor += _armor;
+        Refresh();
+    }
+
+    //清空格挡函数
+    public void CleanArmor()
+    {
+        armor = 0;
+        Refresh();
+    }
+
+    //修改力量函数
+    public void GetStrength(int _count)
+    {
+        strength += _count;
+        FreshState(0);
+    }
+
+    //修改燃烧函数
+    public void GetFire(int _count)
+    {
+        fire += _count;
+        if (fire < 0) { fire = 0; }
+        FreshState(1);
+    }
+
+    //修改毒素函数
+    public void GetToxin(int _count)
+    {
+        toxin += _count;
+        if (toxin < 0) { toxin = 0; }
+        FreshState(2);
+    }
+
+    //修改雷电函数
+    public void GetElectricity(int _count)
+    {
+        electricity += _count;
+        if (electricity < 0) { electricity = 0; }
+        FreshState(3);
+    }
+
+    //刷新状态栏（出于性能考虑，每次调用只刷新一种状态）
+    public void FreshState(int _state)
+    {
+        int state_Count = strength;
+        ref GameObject state_Object = ref Strength_State;
+        switch (_state)
+        {
+            case 0://力量
+                state_Count = strength;
+                state_Object = ref Strength_State;
+                break;
+            case 1://燃烧
+                state_Count = fire;
+                state_Object = ref Fire_State;
+                break;
+            case 2://中毒
+                state_Count = toxin;
+                state_Object = ref Toxin_State;
+                break;
+            case 3://雷电
+                state_Count = electricity;
+                state_Object = ref Ele_State;
+                break;
+            default://传入未知变量则用默认值
+                //state_Count = strength;
+                //state_Object = ref Strength_State;
+                Debug.Log("状态栏刷新异常！");
+                break;
+        }
+        if (state_Count != 0)//检测数值
+        {
+            if (state_Object == null)//检测是否有图标
+            {
+                //调用状态管理器创建图标
+                state_Object = StateManager.GetComponent<StateManager>().AddState(_state, State.transform);
+            }
+            state_Object.GetComponent<State_FreshText>().FreshCount(state_Count);//更新数值文本
+        }
+        else
+        {
+            Destroy(state_Object);
+        }
+    }
+
+    //回合开始（这个由战斗管理器触发，并传入玩家对象）
+    public void Execute(GameObject player)
+    {
+        if (life)
+        {
+            CleanArmor();//清空自身格挡
+            Target = player;//确定目标
+            if (toxin > 0)//判断中毒
+            {
+                ToxinAnim();//播放中毒动画
+                Invoke("ToxinSolve", 1f);//动画完毕后结算中毒
+            }
+            else{ActionAnim();}//立即行动
+        }
+    }
+
+    //中毒结算
+    public void ToxinSolve()
+    {
+        TakeDamage(toxin);//结算一次毒素伤害
+        GetToxin(-3);//减少三层毒素
+        ActionAnim();//结算中毒完成后进入行动
+    }
+
+    //播放行动动画
+    public void ActionAnim()
+    {
+        Image.GetComponent<EnemyImage>().Donghua();//播放行动动画（1秒）
+    }
+
+    //行动结算（这个函数会在动画播放时由EnemyImage触发）
+    public void Action()
+    {
+        //数据层执行意图
+        PlayerState target = Target.GetComponent<PlayerState>();
+        switch (runningIntent)
+        {
+            case 0://攻击意图
+                target.TakeDamage(attack + strength);
+                break;
+            case 1://格挡意图
+                GetArmor(defense);
+                break;
+            case 2://强化意图
+                EnemyBuild();
+                break;
+            case 3://负面意图
+                EnemyNega(target);
+                break;
+            case 4://特殊意图1
+                EnemySpe1(target);
+                break;
+            case 5://特殊意图2
+                //还没写---------
+                break;
+            case 6://特殊意图3
+                //还没写---------
+                break;
+            default:
+                
+                break;
+        }
+        RefreshIntent();//执行完毕后重新选择意图
+        EnemySkillBack();//恢复部分技能冷却
+        if (fire > 0)//判断燃烧
+        {
+            Invoke("FireAnim", 1f);//播放燃烧动画
+            Invoke("FireSolve", 2f);//动画完毕后结算燃烧
+        }
+        else
+        {
+            Acing = false;//没有燃烧则直接结束行动
+        }
+    }
+
+    //燃烧结算
+    public void FireSolve()
+    {
+        int damage = fire - (fire / 2);
+        TakeDamage(damage);//结算一次燃烧伤害
+        GetFire(-damage);//减少一半燃烧
+        Acing = false;//燃烧结算完毕，结束行动
+    }
+
+    //播放燃烧动画（由于卡牌也会调用这个动画，所以不自动结算燃烧）
+    public void FireAnim()
+    {
+        Instantiate(BoomAnim_Prefab, EffectPlace);
+    }
+
+    //播放中毒动画
+    public void ToxinAnim()
+    {
+        Instantiate(ToxinAnim_Prefab, EffectPlace);
+    }
+
+    //敌人强化意图
+    public void EnemyBuild()
+    {
+        switch (id)
+        {
+            case 0://恶魔
+                GetStrength(5);
+                build = -2;//隔2回合才能使用
+                break;
+            default:
+
+                break;
+        }
+    }
+    
+    //敌人负面意图
+    public void EnemyNega(PlayerState _Target)
+    {
+        switch (id)
+        {
+            case 1://幽灵
+                _Target.GetStrength(-2);//减少目标2力量
+                negative = -3;//隔3回合才能使用
+                break;
+            default:
+
+                break;
+        }
+    }
+
+    //敌人特殊意图1
+    public void EnemySpe1(PlayerState _Target)
+    {
+        switch (id)
+        {
+            case 2://小鸡战士
+                int hurt = attack + strength - 5;
+                if (hurt < 0) { hurt = 0; }
+                _Target.TakeDamage(hurt);
+                GetArmor(10);
+                special1 = -1;//隔1回合才能使用
+                break;
+            default:
+
+                break;
+        }
+    }
+
+    //部分敌人回合结束需要恢复技能冷却
+    public void EnemySkillBack()
+    {
+        switch (id)
+        {
+            case 0://恶魔
+                build += 1;
+                break;
+            case 1://幽灵
+                negative += 1;
+                break;
+            case 2://小鸡战士
+                special1 += 1;
+                break;
+            default:
+
+                break;
+        }
+    }
+
+    //敌人特殊意图文本
+    public String EnemyText(int _id, int _type)//接受敌人ID与敌人意图代号
+    {
+        String _Text = String.Empty;
+        switch (_id)
+        {
+            case 2://小鸡战士
+                int hurt = attack + strength - 5;
+                if (hurt < 0) { hurt = 0; }
+                _Text = "攻击：" + (hurt) + "\n防御：10";
+                break;
+            default:
+
+                break;
+        }
+        return _Text;
+    }
+
+}
