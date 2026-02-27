@@ -9,17 +9,32 @@ public class BattleReader : MonoBehaviour
     //使用TextAsset方法读取文本，将目标文本拖到插槽即可
     //public TextAsset battleMessage;
     public List<int> enemies; //敌人代号容器
+    private string LoadSet = "Save";//数据加载文件夹位置
 
     void Awake()
     {
         LoadEnemy();//读取本场战斗敌人
     }
 
+    void Start()
+    {
+        //根据游戏模式决定加载目录
+        switch (Global_PlayerData.Instance.model)
+        {
+            case 0://经典模式
+                LoadSet = "Save";
+                break;
+            case 1://战役模式
+                LoadSet = "War_Save";
+                break;
+        }
+    }
+
     public void LoadEnemy()
     {
         enemies.Clear();//清理容器
         //读取路径
-        string fullPath = Application.dataPath + "/Datas/Save/BattleMessage.csv";
+        string fullPath = Application.dataPath + "/Datas/" + LoadSet +"/BattleMessage.csv";
         //转换为字符串
         string fileContent = File.ReadAllText(fullPath, System.Text.Encoding.UTF8);
         //拆分

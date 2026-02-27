@@ -14,6 +14,7 @@ public class Global_PlayerData : MonoSingleton<Global_PlayerData>
     public int seed = 100;//随机种子
     public bool newGame = true;//是否为新游戏
     public int Map = 1;//玩家当前所在地图
+    public int model = 0;//当前游戏模式（0为经典）
 
     //*************************经典模式变量************************
 
@@ -23,5 +24,5 @@ public class Global_PlayerData : MonoSingleton<Global_PlayerData>
     public int CurrentId = 0;
 
     //*************************战役模式变量************************
-    public int place = 0;
+    public int place = 0;//玩家下一张地图的起始位置
 }

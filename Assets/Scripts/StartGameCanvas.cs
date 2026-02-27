@@ -19,6 +19,7 @@ public class StartGameCanvas : MonoBehaviour
     {
         //执行数据重置函数（不必调用PlayerData）
         ResetPlayerData();
+        Global_PlayerData.Instance.model = 0;
         Global_PlayerData.Instance.newGame = true;//告知全局数据这是新开游戏
         Global_PlayerData.Instance.Map = 1;//切换当前所处地图标志位
         SceneManager.LoadScene(1);//打开序号为1的场景
@@ -30,6 +31,7 @@ public class StartGameCanvas : MonoBehaviour
     //继续经典模式
     public void LoadGameButton()
     {
+        Global_PlayerData.Instance.model = 0;
         Global_PlayerData.Instance.newGame = false;//告知全局数据这是载入游戏
         Global_PlayerData.Instance.Map = 1;//切换当前所处地图标志位
         SceneManager.LoadScene(1);
@@ -38,6 +40,7 @@ public class StartGameCanvas : MonoBehaviour
     //开启战役模式
     public void StartWar()
     {
+        Global_PlayerData.Instance.model = 1;
         Global_PlayerData.Instance.Map = 9;//切换当前所处地图标志位
         SceneManager.LoadScene(9);//打开序号为9的场景
     }
@@ -45,14 +48,16 @@ public class StartGameCanvas : MonoBehaviour
     //开启战役模式测试
     public void StartWarTest()
     {
+        Global_PlayerData.Instance.model = 1;
         Global_PlayerData.Instance.Map = 10;//切换当前所处地图标志位
         SceneManager.LoadScene(10);//打开序号为10的场景
     }
 
 
-    //一键重置玩家数据
+    //重置玩家数据（经典模式用）
     public void ResetPlayerData()
     {
+        //MapSource文件无需重置，创建新地图时地图管理器会自动覆盖
         string originalPath;
         string backupPath;
         //重置PlayerData.csv
@@ -66,6 +71,25 @@ public class StartGameCanvas : MonoBehaviour
         ClearCsvFile(Application.dataPath + "/Datas/Save/MateCard1.csv");
         ClearCsvFile(Application.dataPath + "/Datas/Save/MateCard2.csv");
         ClearCsvFile(Application.dataPath + "/Datas/Save/MateCard3.csv");
+        Debug.Log("玩家数据已重置为默认状态。");
+    }
+
+    //重置玩家数据（战役模式用）
+    public void ResetPlayerData_War()
+    {
+        string originalPath;
+        string backupPath;
+        //重置PlayerData.csv
+        originalPath = Application.dataPath + "/Datas/War_Save/PlayerData.csv";
+        backupPath = Application.dataPath + "/Datas/Normal/PlayerData.csv";
+        ResetPlayerData(originalPath, backupPath);
+        //清空玩家卡组
+        ClearCsvFile(Application.dataPath + "/Datas/War_Save/PlayerCard.csv");
+        //清空同伴卡组
+        ClearCsvFile(Application.dataPath + "/Datas/War_Save/MateCard0.csv");
+        ClearCsvFile(Application.dataPath + "/Datas/War_Save/MateCard1.csv");
+        ClearCsvFile(Application.dataPath + "/Datas/War_Save/MateCard2.csv");
+        ClearCsvFile(Application.dataPath + "/Datas/War_Save/MateCard3.csv");
         Debug.Log("玩家数据已重置为默认状态。");
     }
 

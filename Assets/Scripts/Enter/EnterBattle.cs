@@ -11,10 +11,21 @@ public class EnterBattle : MonoBehaviour
     public int ImageId = 0;//敌人图片ID
     public int[] enemies;//敌人编号集
     public int currentId = 0;//当前对象数据层的ID
+    private string LoadSet = "Save";//数据加载文件夹位置 
 
     void Start()
     {
         LoadImage(ImageId);//加载图片
+        //根据游戏模式决定加载目录
+        switch (Global_PlayerData.Instance.model)
+        {
+            case 0://经典模式
+                LoadSet = "Save";
+                break;
+            case 1://战役模式
+                LoadSet = "War_Save";
+                break;
+        }
     }
 
     //当玩家走进触发器范围时
@@ -43,7 +54,7 @@ public class EnterBattle : MonoBehaviour
     {
         // 定义保存路径
         string folderPath = Application.dataPath + "/Datas";
-        string filePath = folderPath + "/Save/BattleMessage.csv";
+        string filePath = folderPath + "/" + LoadSet +"/BattleMessage.csv";
 
         // 如果文件夹不存在，创建文件夹
         if (!Directory.Exists(folderPath))
