@@ -167,7 +167,7 @@ GameObject:
   - component: {fileID: 1808544525291475032}
   m_Layer: 0
   m_Name: Enemy
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -223,6 +223,8 @@ MonoBehaviour:
   fireAdd: 0
   beatBack: 0
   immune: 0
+  protect: 0
+  weak: 0
   nameText: {fileID: 7079568992627730499}
   hpText: {fileID: 7235016068363757568}
   maxhpText: {fileID: 6138863953419568909}

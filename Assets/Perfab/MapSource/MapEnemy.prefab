@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 7347438667296797185}
   m_Layer: 0
   m_Name: MapEnemy
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -147,6 +147,7 @@ MonoBehaviour:
   SpriteObject: {fileID: 1782639118839263894}
   ImageId: 0
   enemies: 00000000
+  currentId: 0
 --- !u!50 &7347438667296797185
 Rigidbody2D:
   serializedVersion: 4

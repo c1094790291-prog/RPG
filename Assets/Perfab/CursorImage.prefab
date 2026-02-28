@@ -89,3 +89,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cursorImage: {fileID: 1334242001544276318}
+  defaultCursorSprite: {fileID: 21300000, guid: 11d2ef88ba7c7fd4ea6fcd1824761e5d, type: 3}
+  swordCursorSprite: {fileID: 21300000, guid: d01d0f0573472d347ae48cbd53293818, type: 3}
+  mainCamera: {fileID: 0}
+  enemyTagName: Enemy
