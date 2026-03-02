@@ -2020,6 +2020,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 4772140744906146154, guid: d6f95ed89ac020e47b42aefdd3f88188, type: 3}
     - target: {fileID: 1231835049805356674, guid: aa82623030f7d684d9e92ca6a1239778, type: 3}
+      propertyPath: equipPrefab
+      value: 
+      objectReference: {fileID: 5446225313329523546, guid: b3e7aeec40dbba8438b756fc4c0d2be6, type: 3}
+    - target: {fileID: 1231835049805356674, guid: aa82623030f7d684d9e92ca6a1239778, type: 3}
       propertyPath: libraryPanel
       value: 
       objectReference: {fileID: 1759430655}

@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+//此函数不仅用于连携，复用到遗物上，暂时不改名字
 public class ComboMessage : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     //介绍弹窗

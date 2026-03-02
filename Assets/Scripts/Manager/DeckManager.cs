@@ -21,7 +21,7 @@ public class DeckManager : MonoBehaviour
     [Header("布局配置")]
     private Vector2 cardCellSize = new Vector2(300, 400);    // 卡牌单元格大小
     private Vector2 comboCellSize = new Vector2(300, 60);     // 连携单元格大小
-    private Vector2 equipCellSize = new Vector2(120, 80);    // 遗物单元格大小
+    private Vector2 equipCellSize = new Vector2(120, 120);    // 遗物单元格大小
 
     // 缓存Grid布局组件
     private GridLayoutGroup gridLayout;
@@ -126,11 +126,11 @@ public class DeckManager : MonoBehaviour
     /// </summary>
     public void CreateEquip(int equip)
     {
-        //GameObject newEquip = Instantiate(equipPrefab, libraryPanel);
-        //// 替换为你的遗物显示逻辑
-        //newEquip.GetComponent<EquipmentDisplay>().equipment = equip;
-        //// 确保UI适配Grid单元格大小
-        //SetUIElementStretch(newEquip);
+        GameObject newEquip = Instantiate(equipPrefab, libraryPanel);
+        // 替换为你的遗物显示逻辑
+        newEquip.GetComponent<EquipWindow>().EquipId = equip;
+        // 确保UI适配Grid单元格大小
+        SetUIElementStretch(newEquip);
     }
     #endregion
 
