@@ -42,7 +42,7 @@ public class NPC_Chat : MonoBehaviour
         {
             //触发逻辑
             //对话管理器触发
-            ChatManager.Instance.StartChat(chatId);
+            ChatManager.Instance.StartChat(chatId, 0);
             //防止重复触发
             isPlayerInTrigger = false;
         }

@@ -6,7 +6,7 @@ using System.IO;
 using Unity.VisualScripting;
 using UnityEngine.SceneManagement; // 新增：引入场景管理命名空间
 
-[System.Serializable]
+[System.Serializable]//加了这个属性才能正常解析
 public class DialogueEntry
 {
     public string speakerName; // 说话者名字
@@ -14,9 +14,17 @@ public class DialogueEntry
 }
 
 [System.Serializable]
+public class Jump
+{
+    public int target;//目标对话
+    public string btn;//按钮内容
+}
+
+[System.Serializable]
 public class DialogueData
 {
     public List<DialogueEntry> dialogues; // 对话列表
+    public List<Jump> jumps;// 后续跳转对话（可选）
 }
 
 public class ChatManager : MonoSingleton<ChatManager>
@@ -30,6 +38,7 @@ public class ChatManager : MonoSingleton<ChatManager>
     private DialogueData currentDialogueData; // 当前加载的对话数据
     private int currentDialogueIndex = 0; // 当前对话索引
     private bool isPlayerFound = false; // 标记是否已找到Player对象
+    public int chatActionType = 0;//对话完成后执行的内容类型 
 
     //
     protected override void Awake()
@@ -129,7 +138,7 @@ public class ChatManager : MonoSingleton<ChatManager>
     /// 外部调用入口：根据对话序号启动对应对话
     /// </summary>
     /// <param name="chatId">对话文件序号（0=chat0.json，1=chat1.json...）</param>
-    public void StartChat(int chatId)
+    public void StartChat(int chatId, int endAction)
     {
         // 确保Player已找到后再暂停
         if (isPlayerFound && Player != null)
@@ -151,8 +160,12 @@ public class ChatManager : MonoSingleton<ChatManager>
             // 加载成功，显示对话框并显示第一条对话
             if (ChatWindow != null)
             {
+                //显示对话框
                 ChatWindow.SetActive(true);
+                //生成第一条对话
                 ShowCurrentDialogue();
+                //设置执行参数
+                chatActionType = endAction;
             }
         }
         else
@@ -186,7 +199,7 @@ public class ChatManager : MonoSingleton<ChatManager>
             // 解析JSON数据
             currentDialogueData = JsonUtility.FromJson<DialogueData>(jsonContent);
 
-            // 验证数据有效性
+            // 验证数据有效性（只验证主对话内容，不验证选配项目）
             if (currentDialogueData == null || currentDialogueData.dialogues == null || currentDialogueData.dialogues.Count == 0)
             {
                 Debug.LogError("chat" + chatId + ".json 数据为空或格式错误");
@@ -225,17 +238,27 @@ public class ChatManager : MonoSingleton<ChatManager>
         }
         else
         {
-            // 对话结束：隐藏对话框，重置数据
-            ChatWindow.SetActive(false);
+            //结束本段对话
+            //复位计数器
             currentDialogueIndex = 0;
-            currentDialogueData = null; // 清空当前对话数据
-                                        //Debug.Log("对话结束，已自动关闭对话框");
+            //检查是否有跳转对话的按钮
+            if (currentDialogueData.jumps != null && currentDialogueData.jumps.Count > 0)
+            {
+
+                return;
+            }
+            //清空内容
+            currentDialogueData = null;
+            //隐藏对话框
+            ChatWindow.SetActive(false);
+            
 
             // 确保Player已找到后再恢复
             if (isPlayerFound && Player != null)
             {
                 Player.GetComponent<Player>().playerStop = false;//释放玩家动作
             }
+
         }
     }
 
@@ -254,4 +277,11 @@ public class ChatManager : MonoSingleton<ChatManager>
         Name.text = currentEntry.speakerName;
         Message.text = currentEntry.message;
     }
+
+    //显示选择按钮
+    public void showButton()
+    {
+
+    }
+
 }
