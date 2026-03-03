@@ -1,10 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
 using System.IO;
 using Unity.VisualScripting;
+using UnityEngine;
 using UnityEngine.SceneManagement; // 新增：引入场景管理命名空间
+using UnityEngine.UI;
 
 [System.Serializable]//加了这个属性才能正常解析
 public class DialogueEntry
@@ -39,6 +39,18 @@ public class ChatManager : MonoSingleton<ChatManager>
     private int currentDialogueIndex = 0; // 当前对话索引
     private bool isPlayerFound = false; // 标记是否已找到Player对象
     public int chatActionType = 0;//对话完成后执行的内容类型 
+    private bool ChatLock = false;//打开后阻止推进对话
+
+    //选择按钮及其文本
+    public GameObject Button1;
+    public GameObject Button2;
+    public GameObject Button3;
+    public Text BtnText1;
+    public Text BtnText2;
+    public Text BtnText3;
+    public Button Btn1;
+    public Button Btn2;
+    public Button Btn3;
 
     //
     protected override void Awake()
@@ -52,6 +64,7 @@ public class ChatManager : MonoSingleton<ChatManager>
         // 初始化：添加空引用检查，避免启动时报错
         if (ChatWindow != null)
         {
+            GetButton();
             ChatWindow.SetActive(false);
         }
         else
@@ -83,8 +96,8 @@ public class ChatManager : MonoSingleton<ChatManager>
             FindPlayerObject();
         }
 
-        // 只有对话框显示时，才响应鼠标点击推进对话
-        if (ChatWindow != null && ChatWindow.activeSelf)
+        // 只有对话框显示且不在按钮选择时，才响应鼠标点击推进对话
+        if (ChatWindow != null && ChatWindow.activeSelf && !ChatLock)
         {
             if (Input.GetMouseButtonDown(0))
             {
@@ -151,6 +164,11 @@ public class ChatManager : MonoSingleton<ChatManager>
             Debug.LogWarning("启动对话时未找到Player对象，无法暂停玩家动作！");
         }
 
+        //隐藏选择按钮
+        Button1.SetActive(false);
+        Button2.SetActive(false);
+        Button3.SetActive(false);
+
         // 重置对话索引
         currentDialogueIndex = 0;
 
@@ -166,6 +184,8 @@ public class ChatManager : MonoSingleton<ChatManager>
                 ShowCurrentDialogue();
                 //设置执行参数
                 chatActionType = endAction;
+                //解除对话锁
+                ChatLock = false;
             }
         }
         else
@@ -239,12 +259,13 @@ public class ChatManager : MonoSingleton<ChatManager>
         else
         {
             //结束本段对话
-            //复位计数器
+            //重置对话索引
             currentDialogueIndex = 0;
             //检查是否有跳转对话的按钮
             if (currentDialogueData.jumps != null && currentDialogueData.jumps.Count > 0)
             {
-
+                ChatLock = true;//暂时锁住对话
+                showButton();
                 return;
             }
             //清空内容
@@ -281,7 +302,44 @@ public class ChatManager : MonoSingleton<ChatManager>
     //显示选择按钮
     public void showButton()
     {
-
+        //第一个按钮
+        BtnText1.text = currentDialogueData.jumps[0].btn;
+        Button1.SetActive(true);
+        //第二个按钮
+        if (currentDialogueData.jumps.Count >= 2)
+        {
+            BtnText2.text = currentDialogueData.jumps[1].btn;
+            Button2.SetActive(true);
+        }
+        //第三个按钮
+        if (currentDialogueData.jumps.Count >= 3)
+        {
+            BtnText3.text = currentDialogueData.jumps[2].btn;
+            Button3.SetActive(true);
+        }
     }
+
+    //按钮调用：按钮按下后执行的内容
+    public void JumpChat(int _id)
+    {
+        int _target = currentDialogueData.jumps[_id].target;
+        //清空内容
+        currentDialogueData = null;
+        //开启新的对话（目前默认为普通对话）
+        Debug.Log("前往对话："+ _target);
+        StartChat(_target, 0);
+    }
+
+    //获取按钮脚本并绑定
+    public void GetButton()
+    {
+        Btn1 = Button1.GetComponent<Button>();
+        Btn2 = Button2.GetComponent<Button>();
+        Btn3 = Button3.GetComponent<Button>();
+        Btn1.onClick.AddListener(() => JumpChat(0));
+        Btn2.onClick.AddListener(() => JumpChat(1));
+        Btn3.onClick.AddListener(() => JumpChat(2));
+    }
+    
 
 }
