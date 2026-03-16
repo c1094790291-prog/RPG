@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 2394782227773659061}
   - component: {fileID: 1402050517558916564}
   m_Layer: 0
-  m_Name: tree00
+  m_Name: "\u623F\u5C4B"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -73,8 +73,8 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 4
-  m_Sprite: {fileID: 21300000, guid: 8ce554592a298cb4f94eeadbc2e7c0aa, type: 3}
+  m_SortingOrder: 0
+  m_Sprite: {fileID: 21300000, guid: e6b914e9c3780c5468e02988ff590173, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -117,16 +117,16 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.106107, y: 1.5798154}
+  m_Offset: {x: 0.15335798, y: -0.67419714}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 6.79, y: 9.06}
+    oldSize: {x: 2.38, y: 4.59}
     newSize: {x: 6.78, y: 8.67}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 5.5648246, y: 5.1639786}
+  m_Size: {x: 2.0545197, y: 2.9110117}
   m_EdgeRadius: 0
